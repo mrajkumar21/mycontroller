@@ -29,7 +29,7 @@ type Controller struct {
 
 	resclientset clientset.Interface
 
-	testresourcesLister listers.MathResourceLister
+	testresourcesLister listers.TestResourceLister
 	testresourcesSynced cache.InformerSynced
 
 	workqueue workqueue.RateLimitingInterface
@@ -40,7 +40,7 @@ type Controller struct {
 
 func NewController(
 	kubeclientset kubernetes.Interface, resclientset clientset.Interface,
-	testResourceInformer informers.MathResourceInformer) *Controller {
+	testResourceInformer informers.TestResourceInformer) *Controller {
 
 	utilruntime.Must(mathresourcescheme.AddToScheme(scheme.Scheme))
 	glog.V(4).Info("Creating event broadcaster")
