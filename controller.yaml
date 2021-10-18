@@ -12,6 +12,6 @@ spec:
   names:
     plural: testresources
     singular: testresource
-    kind: testresources
+    kind: TestResource
     shortNames:
     - ts
