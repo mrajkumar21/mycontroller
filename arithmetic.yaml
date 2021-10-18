@@ -1,5 +1,5 @@
 apiVersion:  mycontroller.tatacommunications.com/v1alpha1
-kind: TestResources
+kind: testresources
 metadata:
   name: arithmetic
   namespace: default
