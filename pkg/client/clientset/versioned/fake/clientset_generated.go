@@ -20,8 +20,8 @@ package fake
 
 import (
 	clientset "mycontroller/pkg/client/clientset/versioned"
-	mycontrollerv1alpha1 "mycontroller/pkg/client/clientset/versioned/typed/mycontroller/v1alpha1"
-	fakemycontrollerv1alpha1 "mycontroller/pkg/client/clientset/versioned/typed/mycontroller/v1alpha1/fake"
+	mycontrollerv1alpha1 "mycontroller/pkg/client/clientset/versioned/typed/samplecontroller/v1alpha1"
+	fakemycontrollerv1alpha1 "mycontroller/pkg/client/clientset/versioned/typed/samplecontroller/v1alpha1/fake"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"

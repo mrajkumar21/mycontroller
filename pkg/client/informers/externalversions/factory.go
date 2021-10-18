@@ -20,8 +20,8 @@ package externalversions
 
 import (
 	versioned "mycontroller/pkg/client/clientset/versioned"
-	Mycontroller "mycontroller/pkg/client/informers/externalversions/Mycontroller"
 	internalinterfaces "mycontroller/pkg/client/informers/externalversions/internalinterfaces"
+	samplecontroller "mycontroller/pkg/client/informers/externalversions/samplecontroller"
 	reflect "reflect"
 	sync "sync"
 	time "time"
@@ -172,9 +172,9 @@ type SharedInformerFactory interface {
 	ForResource(resource schema.GroupVersionResource) (GenericInformer, error)
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
-	Mycontroller() Mycontroller.Interface
+	Mycontroller() samplecontroller.Interface
 }
 
-func (f *sharedInformerFactory) Mycontroller() Mycontroller.Interface {
-	return Mycontroller.New(f, f.namespace, f.tweakListOptions)
+func (f *sharedInformerFactory) Mycontroller() samplecontroller.Interface {
+	return samplecontroller.New(f, f.namespace, f.tweakListOptions)
 }

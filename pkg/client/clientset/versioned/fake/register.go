@@ -19,7 +19,7 @@ limitations under the License.
 package fake
 
 import (
-	mycontrollerv1alpha1 "mycontroller/pkg/apis/Mycontroller/v1alpha1"
+	mycontrollerv1alpha1 "mycontroller/pkg/apis/samplecontroller/v1alpha1"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"

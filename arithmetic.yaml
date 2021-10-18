@@ -1,9 +1,9 @@
 apiVersion:  mycontroller.tatacommunications.com/v1alpha1
-kind: TestResources
+kind: TestResource
 metadata:
   name: arithmetic
   namespace: default
 spec:
   firstNum: 5
   secondNum: 5
-  operation: add
+  operation: mul

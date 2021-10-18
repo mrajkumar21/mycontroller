@@ -5,11 +5,11 @@ import (
 	"path/filepath"
 	"time"
 
-	clientset "github.com/mrajkumar21/mycontroller/pkg/client/clientset/versioned"
+	clientset "mycontroller/pkg/client/clientset/versioned"
 
 	"mycontroller/pkg/signals"
 
-	informers "github.com/mrajkumar21/mycontroller/pkg/client/informers/externalversions"
+	informers "mycontroller/pkg/client/informers/externalversions"
 
 	"github.com/golang/glog"
 	"k8s.io/client-go/kubernetes"
@@ -49,7 +49,7 @@ func main() {
 
 	mathInformerFactory := informers.NewSharedInformerFactory(resClient, time.Second*30)
 
-	controller := NewController(kubeClient, resClient, mathInformerFactory.Maths().V1alpha1().MathResources())
+	controller := NewController(kubeClient, resClient, mathInformerFactory.Mycontroller().V1alpha1().TestResources())
 
 	// Now let's start the controller
 

@@ -16,10 +16,10 @@ import (
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
 
-	clientset "github.com/mrajkumar21/mycontroller/pkg/client/clientset/versioned"
-	mathresourcescheme "github.com/mrajkumar21/mycontroller/pkg/client/clientset/versioned/scheme"
-	informers "github.com/mrajkumar21/mycontroller/pkg/client/informers/externalversions/Mycontroller/v1alpha1"
-	listers "github.com/mrajkumar21/mycontroller/pkg/client/listers/mycontroller/v1alpha1"
+	clientset "mycontroller/pkg/client/clientset/versioned"
+	mathresourcescheme "mycontroller/pkg/client/clientset/versioned/scheme"
+	informers "mycontroller/pkg/client/informers/externalversions/samplecontroller/v1alpha1"
+	listers "mycontroller/pkg/client/listers/samplecontroller/v1alpha1"
 )
 
 const controllerAgentName = "mycontroller"
@@ -29,7 +29,7 @@ type Controller struct {
 
 	resclientset clientset.Interface
 
-	testresourcesLister listers.MathResourceLister
+	testresourcesLister listers.TestResourceLister
 	testresourcesSynced cache.InformerSynced
 
 	workqueue workqueue.RateLimitingInterface
@@ -40,7 +40,7 @@ type Controller struct {
 
 func NewController(
 	kubeclientset kubernetes.Interface, resclientset clientset.Interface,
-	testResourceInformer informers.MathResourceInformer) *Controller {
+	testResourceInformer informers.TestResourceInformer) *Controller {
 
 	utilruntime.Must(mathresourcescheme.AddToScheme(scheme.Scheme))
 	glog.V(4).Info("Creating event broadcaster")
@@ -113,7 +113,7 @@ func (c *Controller) syncHandler(key string) error {
 		return nil
 	}
 
-	cmath, err := c.testresourcesLister.MathResources(namespace).Get(name)
+	cmath, err := c.testresourcesLister.TestResources(namespace).Get(name)
 	if err != nil {
 		glog.Errorf("Fetching CRD  with key %s from store failed with %v", key, err)
 		return err
@@ -125,24 +125,24 @@ func (c *Controller) syncHandler(key string) error {
 
 		case ("add"):
 			{
-				fmt.Printf("Operation Addition  value= %d \n", cmath.Spec.FirstNum+cmath.Spec.SecondNum)
+				fmt.Printf("Operation Addition  value= %d \n", *cmath.Spec.FirstNum+ *cmath.Spec.SecondNum)
 
 			}
 
 		case ("sub"):
 			{
-				fmt.Printf("Operation subtraction value= %d \n", cmath.Spec.FirstNum-cmath.Spec.SecondNum)
+				fmt.Printf("Operation subtraction value= %d \n", *cmath.Spec.FirstNum- *cmath.Spec.SecondNum)
 
 			}
 		case ("mul"):
 			{
-				fmt.Printf("Operation multiplication  value= %d \n", cmath.Spec.FirstNum*cmath.Spec.SecondNum)
+				fmt.Printf("Operation multiplication  value= %d \n", *cmath.Spec.FirstNum* *cmath.Spec.SecondNum)
 
 			}
 
 		case ("div"):
 			{
-				fmt.Printf("Operation division value= %d \n", cmath.Spec.FirstNum/cmath.Spec.SecondNum)
+				fmt.Printf("Operation division value= %d \n", *cmath.Spec.FirstNum/ *cmath.Spec.SecondNum)
 
 			}
 
