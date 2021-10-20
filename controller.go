@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"time"
-
-	"github.com/golang/glog"
+  "reflect"
+	//"github.com/golang/glog"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -15,13 +15,14 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
-
+ "k8s.io/klog/v2"
+  samplecontroller "mycontroller/pkg/apis/samplecontroller/v1alpha1"
 	clientset "mycontroller/pkg/client/clientset/versioned"
 	mathresourcescheme "mycontroller/pkg/client/clientset/versioned/scheme"
 	informers "mycontroller/pkg/client/informers/externalversions/samplecontroller/v1alpha1"
 	listers "mycontroller/pkg/client/listers/samplecontroller/v1alpha1"
 )
-
+var entry int
 const controllerAgentName = "mycontroller"
 
 type Controller struct {
@@ -41,11 +42,11 @@ type Controller struct {
 func NewController(
 	kubeclientset kubernetes.Interface, resclientset clientset.Interface,
 	testResourceInformer informers.TestResourceInformer) *Controller {
-
+  klog.Info("<<<<<In Controller>>>>>")
 	utilruntime.Must(mathresourcescheme.AddToScheme(scheme.Scheme))
-	glog.V(4).Info("Creating event broadcaster")
+	klog.V(4).Info("Creating event broadcaster")
 	eventBroadcaster := record.NewBroadcaster()
-	eventBroadcaster.StartLogging(glog.Infof)
+	eventBroadcaster.StartLogging(klog.Infof)
 	eventBroadcaster.StartRecordingToSink(&typedcorev1.EventSinkImpl{Interface: kubeclientset.CoreV1().Events("")})
 	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, corev1.EventSource{Component: controllerAgentName})
 
@@ -58,11 +59,17 @@ func NewController(
 		recorder:            recorder,
 	}
 
-	glog.Info("Setting up event handlers")
+	klog.Info("Setting up event handlers")
 	// Set up an event handler for when Student resources change
 	testResourceInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: controller.enqueueTestResource,
 		UpdateFunc: func(old, new interface{}) {
+      newMath := new.(*samplecontroller.TestResource)
+        oldMath := old.(*samplecontroller.TestResource)
+        if reflect.DeepEqual(newMath.Spec, oldMath.Spec) {
+        klog.V(4).Info("Specs not modified. Ignoring update event")
+        return
+       }
 			controller.enqueueTestResource(new)
 		},
 		DeleteFunc: controller.enqueueTestResourceForDelete,
@@ -77,8 +84,7 @@ func (c *Controller) processNextItem() bool {
 	if shutdown {
 		return false
 	}
-
-	err := func(obj interface{}) error {
+    err:= func(obj interface{})error {
 		defer c.workqueue.Done(obj)
 		var key string
 		var ok bool
@@ -90,32 +96,35 @@ func (c *Controller) processNextItem() bool {
 			return nil
 		}
 		if err := c.syncHandler(key); err != nil {
+      klog.Errorf("Error in SyncHandler:",err)
 			c.workqueue.AddRateLimited(key)
-			return fmt.Errorf("error syncing '%s': %s, requeuing", key, err.Error())
+			return fmt.Errorf("error syncing '%s': %s, requeing", key, err.Error())
 		}
 		c.workqueue.Forget(obj)
-		glog.Infof("Successfully synced '%s'", key)
+		klog.Infof("Successfully synced '%s'", key)
 		return nil
-	}(obj)
-
+  }(obj)
 	if err != nil {
-		utilruntime.HandleError(err)
-		return true
+      klog.Errorf("Error in :",err)
+      utilruntime.HandleError(err)
+		  return true
 	}
 
 	return true
 }
 
 func (c *Controller) syncHandler(key string) error {
+
 	namespace, name, err := cache.SplitMetaNamespaceKey(key)
 	if err != nil {
 		utilruntime.HandleError(fmt.Errorf("invalid resource key: %s", key))
+    klog.Errorf("Invalid resource key:",err)
 		return nil
 	}
 
 	cmath, err := c.testresourcesLister.TestResources(namespace).Get(name)
 	if err != nil {
-		glog.Errorf("Fetching CRD  with key %s from store failed with %v", key, err)
+		klog.Errorf("Fetching CRD  with key %s from store failed with %v", key, err)
 		return err
 	}
 
@@ -125,24 +134,24 @@ func (c *Controller) syncHandler(key string) error {
 
 		case ("add"):
 			{
-				fmt.Printf("Operation Addition  value= %d \n", *cmath.Spec.FirstNum+ *cmath.Spec.SecondNum)
+				klog.Infof("Operation Addition  value= %d \n", *cmath.Spec.FirstNum+ *cmath.Spec.SecondNum)
 
 			}
 
 		case ("sub"):
 			{
-				fmt.Printf("Operation subtraction value= %d \n", *cmath.Spec.FirstNum- *cmath.Spec.SecondNum)
+				klog.Infof("Operation subtraction value= %d \n", *cmath.Spec.FirstNum- *cmath.Spec.SecondNum)
 
 			}
 		case ("mul"):
 			{
-				fmt.Printf("Operation multiplication  value= %d \n", *cmath.Spec.FirstNum* *cmath.Spec.SecondNum)
+				klog.Infof("Operation multiplication  value= %d \n", *cmath.Spec.FirstNum* *cmath.Spec.SecondNum)
 
 			}
 
 		case ("div"):
 			{
-				fmt.Printf("Operation division value= %d \n", *cmath.Spec.FirstNum/ *cmath.Spec.SecondNum)
+				klog.Infof("Operation division value= %d \n", *cmath.Spec.FirstNum/ *cmath.Spec.SecondNum)
 
 			}
 
@@ -150,11 +159,11 @@ func (c *Controller) syncHandler(key string) error {
 
 	} else {
 
-		glog.Errorf("Fetching object cmath.Spec.Operation with  key %s from store failed with %v", key, err)
+		klog.Errorf("Fetching object cmath.Spec.Operation with  key %s from store failed with %v", key, err)
 		return err
 
 	}
-
+     
 	return nil
 
 }
@@ -164,19 +173,19 @@ func (c *Controller) Run(threadiness int, stopCh <-chan struct{}) error {
 
 	// Let the workers stop when we are done
 	defer c.workqueue.ShutDown()
-	glog.Info("start controller Business, start a cache data synchronization")
+	klog.Info("start controller Business, start a cache data synchronization")
 	if ok := cache.WaitForCacheSync(stopCh, c.testresourcesSynced); !ok {
 		return fmt.Errorf("failed to wait for caches to sync")
 	}
 
-	glog.Info("worker start-up")
+	klog.Info("worker start-up")
 	for i := 0; i < threadiness; i++ {
-		go wait.Until(c.runWorker, time.Second, stopCh)
+		 go wait.Until(c.runWorker, time.Second, stopCh)
 	}
-
-	glog.Info("worker Already started")
-	<-stopCh
-	glog.Info("worker It's already over.")
+        
+        klog.Info("worker Already Started")
+        <-stopCh
+      	klog.Info("worker It's already over.")
 
 	return nil
 
@@ -192,6 +201,7 @@ func (c *Controller) enqueueTestResource(obj interface{}) {
 	var err error
 	// Cache objects
 	if key, err = cache.MetaNamespaceKeyFunc(obj); err != nil {
+    klog.Errorf("Error in cache objects:",err)
 		runtime.HandleError(err)
 		return
 	}
@@ -207,6 +217,7 @@ func (c *Controller) enqueueTestResourceForDelete(obj interface{}) {
 	// Delete the specified object from the cache
 	key, err = cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
 	if err != nil {
+    klog.Errorf("Delete Operation Failed:",err)
 		runtime.HandleError(err)
 		return
 	}

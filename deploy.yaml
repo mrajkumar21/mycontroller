@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: samplecontroller1
+ labels:
+  app: samplecontroller1
+spec:
+ replicas: 1
+ selector:
+  matchLabels:
+   app: samplecontroller1
+ template:
+  metadata:
+   labels:
+    app: samplecontroller1
+  spec:
+   containers:
+    - name: samplecontroller1
+      image: nextgen98/latestcontroller:v1
+      ports:
+       - containerPort: 80
