@@ -1,0 +1,70 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.7.0
+  creationTimestamp: null
+  name: testresources.mycontroller.tatacommunications.com
+spec:
+  group: mycontroller.tatacommunications.com
+  names:
+    kind: TestResource
+    listKind: TestResourceList
+    plural: testresources
+    singular: testresource
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: TestResource describes a TestResource custom resource.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: TestResourceSpec specifies the 'spec' of TestResource CRD.
+            properties:
+              firstNum:
+                default: 2
+                format: int32
+                type: integer
+              operation:
+                type: string
+              secondNum:
+                format: int32
+                type: integer
+            required:
+            - operation
+            - secondNum
+            type: object
+          status:
+            properties:
+              created_at: {}
+              message:
+                type: string
+              state:
+                type: string
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

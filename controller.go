@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+ "context"
+ metav1"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"time"
   "reflect"
 	//"github.com/golang/glog"
@@ -23,6 +25,10 @@ import (
 	listers "mycontroller/pkg/client/listers/samplecontroller/v1alpha1"
 )
 var entry int
+const(
+   SuccessStatus = "Success"
+   SuccessMessage = "Updated Successfully"
+)
 const controllerAgentName = "mycontroller"
 
 type Controller struct {
@@ -44,7 +50,7 @@ func NewController(
 	testResourceInformer informers.TestResourceInformer) *Controller {
   klog.Info("<<<<<In Controller>>>>>")
 	utilruntime.Must(mathresourcescheme.AddToScheme(scheme.Scheme))
-	klog.V(4).Info("Creating event broadcaster")
+	klog.Info("Creating event broadcaster")
 	eventBroadcaster := record.NewBroadcaster()
 	eventBroadcaster.StartLogging(klog.Infof)
 	eventBroadcaster.StartRecordingToSink(&typedcorev1.EventSinkImpl{Interface: kubeclientset.CoreV1().Events("")})
@@ -67,7 +73,8 @@ func NewController(
       newMath := new.(*samplecontroller.TestResource)
         oldMath := old.(*samplecontroller.TestResource)
         if reflect.DeepEqual(newMath.Spec, oldMath.Spec) {
-        klog.V(4).Info("Specs not modified. Ignoring update event")
+        klog.Info("Status:",newMath.Status)
+        klog.Info("Specs not modified. Ignoring update event")
         return
        }
 			controller.enqueueTestResource(new)
@@ -134,24 +141,24 @@ func (c *Controller) syncHandler(key string) error {
 
 		case ("add"):
 			{
-				klog.Infof("Operation Addition  value= %d \n", *cmath.Spec.FirstNum+ *cmath.Spec.SecondNum)
+				klog.Infof("Operation Addition  value= %d \n", cmath.Spec.FirstNum+ cmath.Spec.SecondNum)
 
 			}
 
 		case ("sub"):
 			{
-				klog.Infof("Operation subtraction value= %d \n", *cmath.Spec.FirstNum- *cmath.Spec.SecondNum)
+				klog.Infof("Operation subtraction value= %d \n", cmath.Spec.FirstNum- cmath.Spec.SecondNum)
 
 			}
 		case ("mul"):
 			{
-				klog.Infof("Operation multiplication  value= %d \n", *cmath.Spec.FirstNum* *cmath.Spec.SecondNum)
+				klog.Infof("Operation multiplication  value= %d \n", cmath.Spec.FirstNum* cmath.Spec.SecondNum)
 
 			}
 
 		case ("div"):
 			{
-				klog.Infof("Operation division value= %d \n", *cmath.Spec.FirstNum/ *cmath.Spec.SecondNum)
+				klog.Infof("Operation division value= %d \n", cmath.Spec.FirstNum/ cmath.Spec.SecondNum)
 
 			}
 
@@ -163,11 +170,23 @@ func (c *Controller) syncHandler(key string) error {
 		return err
 
 	}
-     
+  err = c.updateSamplecontrollerStatus(cmath)
+   if err != nil {
+	 klog.Fatal(err)
+  }
 	return nil
 
 }
+func (c *Controller) updateSamplecontrollerStatus(foo *samplecontroller.TestResource) error {
 
+  fooCopy := foo.DeepCopy()
+  fooCopy.Status.State = SuccessStatus
+  fooCopy.Status.Message = SuccessMessage
+  fooCopy.Status.Created_At= time.Now()
+  _, err := c.resclientset.MycontrollerV1alpha1().TestResources(foo.Namespace).UpdateStatus(context.TODO(), fooCopy, metav1.UpdateOptions{})
+  
+  return err
+}
 func (c *Controller) Run(threadiness int, stopCh <-chan struct{}) error {
 	defer utilruntime.HandleCrash()
 

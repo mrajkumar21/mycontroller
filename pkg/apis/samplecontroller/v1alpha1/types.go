@@ -1,6 +1,10 @@
 package v1alpha1
 
-import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+import 
+(
+metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+"time"
+)
 
 // These const variables are used in our custom controller.
 const (
@@ -15,8 +19,11 @@ const (
 
 // TestResourceSpec specifies the 'spec' of TestResource CRD.
 type TestResourceSpec struct {
-	FirstNum  *int32 `json:"firstNum"`
-	SecondNum *int32 `json:"secondNum"`
+  // +kubebuilder:default=2
+  // +kubebuilder:validation:Optional
+	FirstNum  int32 `json:"firstNum"`
+	SecondNum int32 `json:"secondNum"`
+ 
 	Operation string `json:"operation"`
 }
 
@@ -29,6 +36,18 @@ type TestResource struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec TestResourceSpec `json:"spec"`
+ // +kubebuilder:validation:Optional
+  Status TestResourceStatus `json:"status"`
+}
+
+type TestResourceStatus struct {
+// +kubebuilder:validation:Optional
+	State   string `json:"state"`
+ // +kubebuilder:validation:Optional
+	Message string `json:"message"`
+ // +kubebuilder:validation:Optional
+ // +kubebuilder:validation:Schemaless
+  Created_At time.Time `json:"created_at"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

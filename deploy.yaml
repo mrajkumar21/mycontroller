@@ -16,6 +16,6 @@ spec:
   spec:
    containers:
     - name: samplecontroller1
-      image: nextgen98/latestcontroller:v1
+      image: ko://mycontroller
       ports:
        - containerPort: 80

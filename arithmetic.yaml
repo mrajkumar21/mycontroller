@@ -4,6 +4,6 @@ metadata:
   name: arithmetic
   namespace: default
 spec:
-  firstNum: 10
-  secondNum: 5
+  firstNum: 
+  secondNum: 10
   operation: mul
